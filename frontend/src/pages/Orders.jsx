@@ -43,6 +43,29 @@ const Orders = () => {
     }
   };
 
+  const handleReturn = async (orderId, type) => {
+    try {
+      const reason = prompt(`Please provide a reason for ${type}:`);
+      if (!reason) return;
+
+      const res = await axios.post(
+        backendUrl + "/api/order/return-request",
+        { orderId, type, reason },
+        { headers: { token } }
+      );
+
+      if (res.data.success) {
+        toast.success(res.data.message);
+        loadOrderData();
+      } else {
+        toast.error(res.data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
+  };
+
   useEffect(() => {
     loadOrderData();
   }, [token]);
@@ -89,12 +112,35 @@ const Orders = () => {
                 <p className="min-w-2 h-2 rounded-full bg-green-500"></p>
                 <p className="text-sm md:text-base">{item.status}</p>
               </div>
-              <button
-                onClick={loadOrderData}
-                className="border px-4 py-2 text-sm text-medium rounded-sm"
-              >
-                Track Order
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={loadOrderData}
+                  className="border px-4 py-2 text-sm text-medium rounded-sm"
+                >
+                  Track Order
+                </button>
+                {new Date() - new Date(item.date) <= 7 * 24 * 60 * 60 * 1000 && !item.returnRequest?.status && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleReturn(item._id, 'return')}
+                      className="border px-4 py-2 text-sm text-medium rounded-sm bg-red-50"
+                    >
+                      Return
+                    </button>
+                    <button
+                      onClick={() => handleReturn(item._id, 'replacement')}
+                      className="border px-4 py-2 text-sm text-medium rounded-sm bg-blue-50"
+                    >
+                      Replace
+                    </button>
+                  </div>
+                )}
+                {item.returnRequest?.status && (
+                  <p className="text-sm text-gray-500">
+                    {item.returnRequest.type} request: {item.returnRequest.status}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         ))}

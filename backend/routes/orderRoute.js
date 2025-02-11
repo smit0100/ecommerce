@@ -28,4 +28,8 @@ orderRouter.post("/userorders", authUser, userOrders);
 //VERIFY PAYMENT
 orderRouter.post("/verifystripe", authUser, verifyStripe);
 
+//RETURN/REPLACEMENT
+orderRouter.post("/return-request", authUser, requestReturn);
+orderRouter.post("/update-return", adminAuth, updateReturnStatus);
+
 export default orderRouter;

@@ -49,6 +49,26 @@ const Order = ({ token }) => {
     }
   };
 
+  const handleReturnStatus = async (orderId, status) => {
+    try {
+      const res = await axios.post(
+        backendUrl + "/api/order/return", // Assuming a new route for return status updates
+        { orderId, status },
+        { headers: { token } }
+      );
+      if (res.data.success) {
+        await fetchAllOrders();
+        toast.success(res.data.message);
+      } else {
+        toast.error(res.data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
+  };
+
+
   useEffect(() => {
     fetchAllOrders();
   }, [token]);
@@ -110,17 +130,36 @@ const Order = ({ token }) => {
               {currency} {order.amount}
             </p>
 
-            <select
-              value={order.status}
-              className="p-2 font-semibold"
-              onChange={(e) => statusHandler(e, order._id)}
-            >
-              <option value="Order Placed">Order Placed</option>
-              <option value="Packing">Packing</option>
-              <option value="Shipped">Shipped</option>
-              <option value="Out for delivery">Out for delivery</option>
-              <option value="Delivered">Delivered</option>
-            </select>
+            <div className="flex gap-4">
+              <select
+                value={order.status}
+                className="p-2 font-semibold"
+                onChange={(e) => statusHandler(e, order._id)}
+              >
+                <option value="Order Placed">Order Placed</option>
+                <option value="Packing">Packing</option>
+                <option value="Shipped">Shipped</option>
+                <option value="Out for delivery">Out for delivery</option>
+                <option value="Delivered">Delivered</option>
+              </select>
+              {/* Added return request handling buttons */}
+              {order.returnRequest?.status === 'pending' && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleReturnStatus(order._id, 'approved')}
+                    className="bg-green-500 text-white px-2 py-1"
+                  >
+                    Approve {order.returnRequest.type}
+                  </button>
+                  <button
+                    onClick={() => handleReturnStatus(order._id, 'rejected')}
+                    className="bg-red-500 text-white px-2 py-1"
+                  >
+                    Reject {order.returnRequest.type}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         ))}
       </div>

@@ -5,6 +5,19 @@ const orderSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  returnRequest: {
+    status: {
+      type: String,
+      enum: ['none', 'pending', 'approved', 'rejected'],
+      default: 'none'
+    },
+    reason: String,
+    requestDate: Number,
+    type: {
+      type: String,
+      enum: ['return', 'replacement'],
+    }
+  },
   items: {
     type: Array,
     required: true,

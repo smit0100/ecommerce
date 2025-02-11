@@ -152,3 +152,50 @@ export const updateStatus = async (req, res) => {
     res.json({ success: false, message: error.message });
   }
 };
+// REQUEST RETURN OR REPLACEMENT
+export const requestReturn = async (req, res) => {
+  try {
+    const { orderId, reason, type } = req.body;
+    
+    // Check if within 7 days
+    const order = await orderModel.findById(orderId);
+    const orderDate = new Date(order.date);
+    const today = new Date();
+    const daysDiff = Math.floor((today - orderDate) / (1000 * 60 * 60 * 24));
+    
+    if (daysDiff > 7) {
+      return res.json({ 
+        success: false, 
+        message: "Return/Replacement can only be requested within 7 days of order" 
+      });
+    }
+
+    await orderModel.findByIdAndUpdate(orderId, {
+      returnRequest: {
+        status: 'pending',
+        reason,
+        type,
+        requestDate: Date.now()
+      }
+    });
+
+    res.json({ success: true, message: `${type} request submitted successfully` });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+// UPDATE RETURN REQUEST STATUS (ADMIN)
+export const updateReturnStatus = async (req, res) => {
+  try {
+    const { orderId, status } = req.body;
+    await orderModel.findByIdAndUpdate(orderId, {
+      'returnRequest.status': status
+    });
+    res.json({ success: true, message: "Return status updated" });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
