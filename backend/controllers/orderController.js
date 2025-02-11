@@ -159,6 +159,12 @@ export const requestReturn = async (req, res) => {
     
     // Check if within 7 days
     const order = await orderModel.findById(orderId);
+    if (!order) {
+      return res.json({ 
+        success: false, 
+        message: "Order not found" 
+      });
+    }
     const orderDate = new Date(order.date);
     const today = new Date();
     const daysDiff = Math.floor((today - orderDate) / (1000 * 60 * 60 * 24));
